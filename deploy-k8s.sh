@@ -8,7 +8,12 @@ echo "🚀 Starting Kubernetes deployment for Knowledge Bot..."
 if ! kubectl get secret gemini-secrets > /dev/null 2>&1; then
     echo "⚠️  Warning: 'gemini-secrets' not found."
     echo "Please create it using: kubectl create secret generic gemini-secrets --from-literal=api-key=YOUR_API_KEY"
-    echo "Continuing anyway, but pods might fail to start if the secret is missing."
+fi
+
+# Check if microsoft-secrets exists
+if ! kubectl get secret microsoft-secrets > /dev/null 2>&1; then
+    echo "⚠️  Warning: 'microsoft-secrets' not found."
+    echo "Please create it using: kubectl create secret generic microsoft-secrets --from-literal=client-id=YOUR_CLIENT_ID --from-literal=tenant-id=YOUR_TENANT_ID --from-literal=client-secret=YOUR_CLIENT_SECRET"
 fi
 
 echo "📦 Building Backend Image..."

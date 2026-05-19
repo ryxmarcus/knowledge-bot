@@ -40,6 +40,21 @@ spec:
             secretKeyRef:
               name: gemini-secrets
               key: api-key
+        - name: MS_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: microsoft-secrets
+              key: client-id
+        - name: MS_TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              name: microsoft-secrets
+              key: tenant-id
+        - name: MS_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: microsoft-secrets
+              key: client-secret
 ---
 apiVersion: v1
 kind: Service

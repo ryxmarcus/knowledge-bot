@@ -19,6 +19,9 @@ export class ZipService {
       try {
         // For now, let's create a main Documentation.md and potentially split it
         archive.append(markdown, { name: 'Knowledge_Base.md' });
+      } catch (err) {
+        console.error('Error appending to zip:', err);
+      }
 
       // If we want to split by sections (e.g., looking for ## headers)
       const sections = markdown.split(/\n(?=## )/);

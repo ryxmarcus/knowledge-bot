@@ -58,12 +58,12 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>Knowledge Handover Assistant</h1>
+        <h1>Knowledge Sharing Platform</h1>
       </header>
       <main className="app-main">
         <section className="welcome-section">
           <h2>Welcome</h2>
-          <p>This tool helps you document your knowledge before leaving. Connect your accounts and upload files to get started.</p>
+          <p>This tool helps you organize and share your knowledge with your team. Connect your accounts and upload files to get started.</p>
         </section>
         
         <div className="action-cards">
@@ -103,13 +103,13 @@ function App() {
                 onClick={handleGenerate}
                 disabled={status === 'generating' || (!data && uploadedCount === 0)}
               >
-                {status === 'generating' ? 'Analyzing with Gemini...' : 'Generate Handover Documents'}
+                {status === 'generating' ? 'Analyzing with Gemini...' : 'Generate Knowledge Package'}
               </button>
             ) : (
               <div className="success-zone">
                 <p className="success-text large">Documents Generated Successfully!</p>
                 <button className="btn-primary download-btn" onClick={handleDownload}>
-                  Download Handover Package (.zip)
+                  Download Knowledge Package (.zip)
                 </button>
               </div>
             )}

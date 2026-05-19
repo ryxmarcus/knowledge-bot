@@ -16,8 +16,9 @@ export class ZipService {
       archive.pipe(output);
 
       // Split markdown by sections if possible, or just create one main file
-      // For now, let's create a main Handover.md and potentially split it
-      archive.append(markdown, { name: 'Handover_Documentation.md' });
+      try {
+        // For now, let's create a main Documentation.md and potentially split it
+        archive.append(markdown, { name: 'Knowledge_Base.md' });
 
       // If we want to split by sections (e.g., looking for ## headers)
       const sections = markdown.split(/\n(?=## )/);

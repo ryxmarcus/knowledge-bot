@@ -18,7 +18,16 @@ const PORT = process.env.PORT || 3001;
 const upload = multer({ dest: 'uploads/' });
 const geminiService = new GeminiService(process.env.GEMINI_API_KEY || "");
 
-const pca = new msal.ConfidentialClientApplication(msalConfig);
+let pca: msal.ConfidentialClientApplication | null = null;
+try {
+  if (msalConfig.auth.clientId && msalConfig.auth.clientSecret) {
+    pca = new msal.ConfidentialClientApplication(msalConfig);
+  } else {
+    console.warn('MS_CLIENT_ID or MS_CLIENT_SECRET not provided. Microsoft integration will be disabled.');
+  }
+} catch (error) {
+  console.error('Failed to initialize MSAL:', error);
+}
 
 app.use(cors());
 app.use(express.json());
@@ -29,7 +38,12 @@ app.use(express.json());
 });
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Knowledge Handover API is running' });
+  res.json({ 
+    status: 'OK', 
+    message: 'Knowledge Handover API is running',
+    microsoftEnabled: !!pca,
+    geminiEnabled: !!process.env.GEMINI_API_KEY
+  });
 });
 
 app.post('/api/upload', upload.array('files'), (req, res) => {
@@ -44,6 +58,10 @@ app.post('/api/generate', async (req, res) => {
   const zipPath = path.join('output', `handover_${requestId}.zip`);
   
   try {
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY is not configured on the server.');
+    }
+
     // 1. Fetch Microsoft Data
     let emails = [];
     let chats = [];
@@ -73,9 +91,9 @@ app.post('/api/generate', async (req, res) => {
     }
 
     res.json({ downloadUrl: `/api/download/${requestId}` });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    res.status(500).json({ error: 'Generation failed' });
+    res.status(500).json({ error: error.message || 'Generation failed' });
   }
 });
 
@@ -91,6 +109,8 @@ app.get('/api/download/:id', (req, res) => {
 });
 
 app.get('/api/auth/login', (req, res) => {
+  if (!pca) return res.status(503).send('Microsoft integration is not configured.');
+
   const authCodeUrlParameters = {
     scopes: MS_GRAPH_SCOPE,
     redirectUri: REDIRECT_URI,
@@ -102,6 +122,8 @@ app.get('/api/auth/login', (req, res) => {
 });
 
 app.get('/api/auth/callback', (req, res) => {
+  if (!pca) return res.status(503).send('Microsoft integration is not configured.');
+
   const tokenRequest = {
     code: req.query.code as string,
     scopes: MS_GRAPH_SCOPE,

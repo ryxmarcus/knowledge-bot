@@ -28,7 +28,7 @@ spec:
         kubernetes.io/hostname: controlplane
       containers:
       - name: backend
-        image: knowledge-bot-backend:latest
+        image: docker.io/library/knowledge-bot-backend:v1.0.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8081
@@ -45,16 +45,19 @@ spec:
             secretKeyRef:
               name: microsoft-secrets
               key: client-id
+              optional: true
         - name: MS_TENANT_ID
           valueFrom:
             secretKeyRef:
               name: microsoft-secrets
               key: tenant-id
+              optional: true
         - name: MS_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
               name: microsoft-secrets
               key: client-secret
+              optional: true
 ---
 apiVersion: v1
 kind: Service
@@ -88,7 +91,7 @@ spec:
         kubernetes.io/hostname: controlplane
       containers:
       - name: frontend
-        image: knowledge-bot-frontend:latest
+        image: docker.io/library/knowledge-bot-frontend:v1.0.1
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080

@@ -28,7 +28,7 @@ spec:
         kubernetes.io/hostname: controlplane
       containers:
       - name: backend
-        image: docker.io/library/knowledge-bot-backend:v1.0.6
+        image: docker.io/library/knowledge-bot-backend:v1.0.8
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8081
@@ -96,7 +96,7 @@ spec:
         kubernetes.io/hostname: controlplane
       containers:
       - name: frontend
-        image: docker.io/library/knowledge-bot-frontend:v1.0.6
+        image: docker.io/library/knowledge-bot-frontend:v1.0.8
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080

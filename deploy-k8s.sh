@@ -18,20 +18,20 @@ fi
 
 echo "📦 Building Backend Image..."
 cd backend
-docker build -t knowledge-bot-backend:v1.0.6 .
-docker save knowledge-bot-backend:v1.0.6 | ctr -n k8s.io images import -
+docker build -t knowledge-bot-backend:v1.0.8 .
+docker save knowledge-bot-backend:v1.0.8 | ctr -n k8s.io images import -
 cd ..
 
 echo "📦 Building Frontend Image..."
 cd frontend
-docker build -t knowledge-bot-frontend:v1.0.6 .
-docker save knowledge-bot-frontend:v1.0.6 | ctr -n k8s.io images import -
+docker build -t knowledge-bot-frontend:v1.0.8 .
+docker save knowledge-bot-frontend:v1.0.8 | ctr -n k8s.io images import -
 cd ..
 
 echo "☸️  Applying Kubernetes Manifests..."
-# Ensure deployment.yaml uses the v1.0.6 images
-sed -i 's/knowledge-bot-backend:v1.0.5/knowledge-bot-backend:v1.0.6/g' k8s/deployment.yaml
-sed -i 's/knowledge-bot-frontend:v1.0.5/knowledge-bot-frontend:v1.0.6/g' k8s/deployment.yaml
+# Ensure deployment.yaml uses the v1.0.8 images
+sed -i 's/knowledge-bot-backend:v1.0.5/knowledge-bot-backend:v1.0.8/g' k8s/deployment.yaml
+sed -i 's/knowledge-bot-frontend:v1.0.5/knowledge-bot-frontend:v1.0.8/g' k8s/deployment.yaml
 kubectl apply -f k8s/deployment.yaml
 
 echo "✅ Deployment complete!"

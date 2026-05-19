@@ -69,12 +69,12 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>KnowledgeNexus</h1>
+        <h1>Allcargo Knowledge Bot</h1>
       </header>
       <main className="app-main">
         <section className="welcome-section">
-          <h2>Welcome</h2>
-          <p>This tool helps you organize and share your knowledge with your team. Connect your accounts and upload files to get started.</p>
+          <h2>Intelligence Hub</h2>
+          <p>Organize and synthesize logistics and project knowledge across your team.</p>
         </section>
         
         <div className="action-cards">

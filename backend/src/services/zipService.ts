@@ -23,7 +23,7 @@ export class ZipService {
       const sections = markdown.split(/\n(?=## )/);
       sections.forEach(section => {
         const match = section.match(/## (.*)/);
-        if (match) {
+        if (match && match[1]) {
           const fileName = `${match[1].trim().replace(/\s+/g, '_')}.md`;
           archive.append(section, { name: `details/${fileName}` });
         }

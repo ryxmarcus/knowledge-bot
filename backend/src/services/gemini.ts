@@ -11,14 +11,14 @@ export class GeminiService {
 
   async analyzeKnowledge(emails: any, chats: any, localFiles: string[]) {
     const prompt = `
-      You are an expert technical assistant helping a team organize and share their internal knowledge.
+      You are an expert technical assistant helping a team organize and share their internal knowledge via the KnowledgeNexus platform.
       
       I will provide you with:
       1. Recent emails (summary)
       2. Teams chat messages
       3. Content from local READMEs or system files
       
-      Your task is to generate a comprehensive knowledge sharing package in Markdown format.
+      Your task is to generate a comprehensive KnowledgeNexus package in Markdown format.
       Divide the output into the following sections:
       - **Active Projects**: Current status, upcoming deadlines, and key goals.
       - **Key Contacts**: Internal and external stakeholders, and what they are responsible for.

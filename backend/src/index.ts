@@ -40,7 +40,7 @@ app.use(express.json());
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
-    message: 'Knowledge Sharing API is running',
+    message: 'KnowledgeNexus API is running',
     microsoftEnabled: !!pca,
     geminiEnabled: !!process.env.GEMINI_API_KEY
   });
@@ -100,7 +100,7 @@ app.post('/api/generate', async (req, res) => {
 app.get('/api/download/:id', (req, res) => {
   const zipPath = path.join('output', `handover_${req.params.id}.zip`);
   if (fs.existsSync(zipPath)) {
-    res.download(zipPath, 'Knowledge_Sharing.zip', () => {
+    res.download(zipPath, 'KnowledgeNexus_Export.zip', () => {
       fs.unlinkSync(zipPath); // Delete after download
     });
   } else {

@@ -58,7 +58,7 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>Knowledge Sharing Platform</h1>
+        <h1>KnowledgeNexus</h1>
       </header>
       <main className="app-main">
         <section className="welcome-section">

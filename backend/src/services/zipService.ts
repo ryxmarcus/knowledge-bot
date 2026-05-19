@@ -18,7 +18,7 @@ export class ZipService {
       // Split markdown by sections if possible, or just create one main file
       try {
         // For now, let's create a main Documentation.md and potentially split it
-        archive.append(markdown, { name: 'Knowledge_Base.md' });
+        archive.append(markdown, { name: 'Nexus_Core.md' });
       } catch (err) {
         console.error('Error appending to zip:', err);
       }

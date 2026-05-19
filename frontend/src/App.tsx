@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { loginWithMicrosoft, fetchData } from './services/api'
+import { loginWithMicrosoft, fetchData, getHealth } from './services/api'
 import FileUploader from './components/FileUploader'
 import './App.css'
 
@@ -10,8 +10,19 @@ function App() {
   const [data, setData] = useState<any>(null)
   const [uploadedCount, setUploadedCount] = useState<number>(0)
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
+  const [activeLLM, setActiveLLM] = useState<string>('AI')
 
   useEffect(() => {
+    const fetchHealth = async () => {
+      try {
+        const health = await getHealth()
+        setActiveLLM(health.activeLLM || 'AI')
+      } catch (err) {
+        console.warn('Failed to fetch health status')
+      }
+    }
+    fetchHealth()
+
     const urlParams = new URLSearchParams(window.location.search)
     const accessToken = urlParams.get('access_token')
     if (accessToken) {
@@ -103,7 +114,7 @@ function App() {
                 onClick={handleGenerate}
                 disabled={status === 'generating' || (!data && uploadedCount === 0)}
               >
-                {status === 'generating' ? 'Analyzing with Gemini...' : 'Generate Knowledge Package'}
+                {status === 'generating' ? `Analyzing with ${activeLLM}...` : `Generate Knowledge Package with ${activeLLM}`}
               </button>
             ) : (
               <div className="success-zone">

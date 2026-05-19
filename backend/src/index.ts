@@ -7,8 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import { msalConfig, MS_GRAPH_SCOPE, REDIRECT_URI } from './config';
 import { MicrosoftGraphService } from './services/microsoftGraph';
-import { GeminiService } from './services/gemini';
-import { BedrockService } from './services/bedrock';
+import { OpenRouterService } from './services/openrouter';
 import { ZipService } from './services/zipService';
 
 dotenv.config();
@@ -18,16 +17,11 @@ const PORT = process.env.PORT || 3001;
 
 const upload = multer({ dest: 'uploads/' });
 
-// Initialize LLM Services
-const geminiService = new GeminiService(process.env.GEMINI_API_KEY || "");
-const bedrockService = new BedrockService(
-  process.env.AWS_REGION || "us-east-1",
-  process.env.AWS_ACCESS_KEY_ID,
-  process.env.AWS_SECRET_ACCESS_KEY
+// Initialize OpenRouter Service
+const openRouterService = new OpenRouterService(
+  process.env.OPENROUTER_API_KEY || "",
+  process.env.OPENROUTER_MODEL_ID
 );
-
-// Determine which LLM to use
-const USE_BEDROCK = process.env.USE_BEDROCK === 'true' || !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY);
 
 let pca: msal.ConfidentialClientApplication | null = null;
 try {
@@ -53,9 +47,8 @@ app.get('/api/health', (req, res) => {
     status: 'OK', 
     message: 'KnowledgeNexus API is running',
     microsoftEnabled: !!pca,
-    geminiEnabled: !!process.env.GEMINI_API_KEY,
-    bedrockEnabled: !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY),
-    activeLLM: USE_BEDROCK ? 'Bedrock' : 'Gemini'
+    openRouterEnabled: !!process.env.OPENROUTER_API_KEY,
+    activeLLM: 'OpenRouter'
   });
 });
 
@@ -71,8 +64,8 @@ app.post('/api/generate', async (req, res) => {
   const zipPath = path.join('output', `handover_${requestId}.zip`);
   
   try {
-    if (!process.env.GEMINI_API_KEY && !USE_BEDROCK) {
-      throw new Error('No LLM service (Gemini or Bedrock) is configured on the server.');
+    if (!process.env.OPENROUTER_API_KEY) {
+      throw new Error('OpenRouter API key is not configured on the server.');
     }
 
     // 1. Fetch Microsoft Data
@@ -92,15 +85,9 @@ app.post('/api/generate', async (req, res) => {
       localFilesContent.push(`File: ${file}\nContent:\n${content}`);
     }
 
-    // 3. Generate with selected LLM
-    let result;
-    if (USE_BEDROCK) {
-      console.log('Generating with Bedrock...');
-      result = await bedrockService.analyzeKnowledge(emails, chats, localFilesContent);
-    } else {
-      console.log('Generating with Gemini...');
-      result = await geminiService.analyzeKnowledge(emails, chats, localFilesContent);
-    }
+    // 3. Generate with OpenRouter
+    console.log('Generating with OpenRouter...');
+    const result = await openRouterService.analyzeKnowledge(emails, chats, localFilesContent);
 
     // 4. Create Zip
     await ZipService.createHandoverZip(result, zipPath);

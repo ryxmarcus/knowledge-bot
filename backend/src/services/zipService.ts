@@ -1,17 +1,17 @@
-import archiver from 'archiver';
 import fs from 'fs';
 import path from 'path';
+const { ZipArchive } = require('archiver');
 
 export class ZipService {
   static async createHandoverZip(markdown: string, outputPath: string) {
     const output = fs.createWriteStream(outputPath);
-    const archive = archiver('zip', {
+    const archive = new ZipArchive({
       zlib: { level: 9 }
     });
 
     return new Promise((resolve, reject) => {
       output.on('close', () => resolve(true));
-      archive.on('error', (err) => reject(err));
+      archive.on('error', (err: any) => reject(err));
 
       archive.pipe(output);
 

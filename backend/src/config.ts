@@ -6,15 +6,6 @@ export const msalConfig: Configuration = {
     authority: `https://login.microsoftonline.com/${process.env.MS_TENANT_ID || "common"}`,
     clientSecret: process.env.MS_CLIENT_SECRET || "",
   },
-  system: {
-    loggerOptions: {
-      loggerCallback(loglevel, message, containsPii) {
-        console.log(message);
-      },
-      piiLoggingEnabled: false,
-      logLevel: LogLevel.Info,
-    },
-  },
 };
 
 export const REDIRECT_URI = process.env.REDIRECT_URI || "http://localhost:3001/api/auth/callback";

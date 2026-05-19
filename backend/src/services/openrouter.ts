@@ -1,12 +1,12 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import axios from 'axios';
 
-export class GeminiService {
-  private genAI: GoogleGenerativeAI;
-  private model: any;
+export class OpenRouterService {
+  private apiKey: string;
+  private modelId: string;
 
-  constructor(apiKey: string) {
-    this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  constructor(apiKey: string, modelId?: string) {
+    this.apiKey = apiKey;
+    this.modelId = modelId || "amazon/nova-pro-v1";
   }
 
   async analyzeKnowledge(emails: any, chats: any, localFiles: string[]) {
@@ -37,8 +37,32 @@ export class GeminiService {
       ${localFiles.join('\n---\n')}
     `;
 
-    const result = await this.model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
+    try {
+      const response = await axios.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          model: this.modelId,
+          messages: [
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://knowledge-bot.local", // Optional, for OpenRouter rankings
+            "X-Title": "Knowledge Bot", // Optional, for OpenRouter rankings
+          },
+        }
+      );
+
+      return response.data.choices[0].message.content;
+    } catch (error: any) {
+      console.error("OpenRouter Error:", error.response?.data || error.message);
+      throw new Error("Failed to generate content with OpenRouter");
+    }
   }
 }

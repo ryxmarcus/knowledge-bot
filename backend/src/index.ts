@@ -1,12 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import * as msal from "@azure/msal-node";
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { msalConfig, MS_GRAPH_SCOPE, REDIRECT_URI } from './config';
-import { MicrosoftGraphService } from './services/microsoftGraph';
 import { OpenRouterService } from './services/openrouter';
 import { ZipService } from './services/zipService';
 
@@ -23,17 +20,6 @@ const openRouterService = new OpenRouterService(
   process.env.OPENROUTER_MODEL_ID
 );
 
-let pca: msal.ConfidentialClientApplication | null = null;
-try {
-  if (msalConfig.auth.clientId && msalConfig.auth.clientSecret) {
-    pca = new msal.ConfidentialClientApplication(msalConfig);
-  } else {
-    console.warn('MS_CLIENT_ID or MS_CLIENT_SECRET not provided. Microsoft integration will be disabled.');
-  }
-} catch (error) {
-  console.error('Failed to initialize MSAL:', error);
-}
-
 app.use(cors());
 app.use(express.json());
 
@@ -46,7 +32,6 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     message: 'KnowledgeNexus API is running',
-    microsoftEnabled: !!pca,
     openRouterEnabled: !!process.env.OPENROUTER_API_KEY,
     activeLLM: 'OpenRouter'
   });
@@ -59,7 +44,6 @@ app.post('/api/upload', upload.array('files'), (req, res) => {
 });
 
 app.post('/api/generate', async (req, res) => {
-  const { accessToken } = req.body;
   const requestId = Date.now().toString();
   const zipPath = path.join('output', `handover_${requestId}.zip`);
   
@@ -68,16 +52,7 @@ app.post('/api/generate', async (req, res) => {
       throw new Error('OpenRouter API key is not configured on the server.');
     }
 
-    // 1. Fetch Microsoft Data
-    let emails = [];
-    let chats = [];
-    if (accessToken) {
-      const graphService = new MicrosoftGraphService(accessToken);
-      emails = await graphService.getEmails();
-      chats = await graphService.getTeamsMessages();
-    }
-
-    // 2. Read Uploaded Files
+    // 1. Read Uploaded Files
     const localFilesContent: string[] = [];
     const files = fs.readdirSync('uploads');
     for (const file of files) {
@@ -85,14 +60,14 @@ app.post('/api/generate', async (req, res) => {
       localFilesContent.push(`File: ${file}\nContent:\n${content}`);
     }
 
-    // 3. Generate with OpenRouter
+    // 2. Generate with OpenRouter
     console.log('Generating with OpenRouter...');
-    const result = await openRouterService.analyzeKnowledge(emails, chats, localFilesContent);
+    const result = await openRouterService.analyzeKnowledge([], [], localFilesContent);
 
-    // 4. Create Zip
+    // 3. Create Zip
     await ZipService.createHandoverZip(result, zipPath);
 
-    // 5. Cleanup uploads
+    // 4. Cleanup uploads
     for (const file of files) {
       fs.unlinkSync(path.join('uploads', file));
     }
@@ -112,55 +87,6 @@ app.get('/api/download/:id', (req, res) => {
     });
   } else {
     res.status(404).send('File not found');
-  }
-});
-
-app.get('/api/auth/login', (req, res) => {
-  if (!pca) return res.status(503).send('Microsoft integration is not configured.');
-
-  const authCodeUrlParameters = {
-    scopes: MS_GRAPH_SCOPE,
-    redirectUri: REDIRECT_URI,
-  };
-
-  pca.getAuthCodeUrl(authCodeUrlParameters).then((response) => {
-    res.redirect(response);
-  }).catch((error) => console.log(JSON.stringify(error)));
-});
-
-app.get('/api/auth/callback', (req, res) => {
-  if (!pca) return res.status(503).send('Microsoft integration is not configured.');
-
-  const tokenRequest = {
-    code: req.query.code as string,
-    scopes: MS_GRAPH_SCOPE,
-    redirectUri: REDIRECT_URI,
-  };
-
-  pca.acquireTokenByCode(tokenRequest).then((response) => {
-    // In a real app, you'd store this in a session
-    // For MVP, we'll redirect back to frontend with token in query (NOT SECURE for production, but okay for this demo/local tool)
-    res.redirect(`http://localhost:3000?access_token=${response.accessToken}`);
-  }).catch((error) => {
-    console.log(error);
-    res.status(500).send(error);
-  });
-});
-
-app.get('/api/data/fetch', async (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).send('No token provided');
-  
-  const token = authHeader.split(' ')[1];
-  if (!token) return res.status(401).send('Invalid token format');
-  const graphService = new MicrosoftGraphService(token);
-  
-  try {
-    const emails = await graphService.getEmails();
-    const chats = await graphService.getTeamsMessages();
-    res.json({ emails, chats });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch data' });
   }
 });
 

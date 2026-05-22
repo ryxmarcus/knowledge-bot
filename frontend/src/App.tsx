@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { loginWithMicrosoft, fetchData, getHealth } from './services/api'
+import { getHealth } from './services/api'
 import FileUploader from './components/FileUploader'
 import './App.css'
 
